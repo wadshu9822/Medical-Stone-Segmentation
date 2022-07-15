@@ -43,8 +43,8 @@ class main:
         # self.height = int(self.main_screen.height * .6)
         self.width =1200
         self.height =900
-        self.x = []
-        self.y = []
+        self.xcoordinate = []
+        self.ycoordinate = []
 
         self.master.geometry('{}x{}'.format(self.width, self.height))
         
@@ -60,7 +60,7 @@ class main:
         # self.models = Models(device=device)
 
         self.select_cam()  # 先显示button和menu，此时进入一个循环，直到点击事件
-        self.delay = 5
+        self.delay = 2
         self.load_cam(self.filepath)  # 若使用相机则清空画布，加载相机
         self.update()
             # print('helloA')
@@ -71,9 +71,10 @@ class main:
 
 
     def callback(self,event):
-        self.x.append(event.x)
-        self.y.append(event.y)
+        self.xcoordinate.append(event.x)
+        self.ycoordinate.append(event.y)
         print("clicked at", event.x, event.y)
+        print(self.xcoordinate)
 
 
     def preproc(self, image):
@@ -85,8 +86,11 @@ class main:
     def startseg(self):
         self.seg = True
 
+
     def stopseg(self):
         self.seg = False
+        self.xcoordinate = [] # 停止后清除坐标存储
+        self.ycoordinate = []
 
 
     def select_cam(self):
@@ -145,7 +149,8 @@ class main:
             self.cam.__del__()
 
         if type(source) is str and os.path.isfile(source):  # 用于加载视频或者图片
-            self.cam = CamLoader_Q(source, queue_size=2000, preprocess=self.preproc).start()
+            self.cam = CamLoader_Q(source, queue_size = 3000,preprocess=self.preproc).start()
+            # 调用start()时就已经update 转换为RGB通道
         else:  # 加载摄像头
             self.cam = CamLoader(source,preprocess=self.preproc).start()
 
@@ -154,22 +159,26 @@ class main:
             return
         if self.cam.grabbed():
             frame = self.cam.getitem()
-            frame = cv2.resize(frame, (800,800),
+            frame = cv2.resize(frame, (800,600),
                                interpolation=cv2.INTER_CUBIC)
             # frame = self.models.process_frame(frame)
-            if self.seg == True:
-                frame = frame_seg(frame)
+            if self.seg == True: #and len(self.xcoordinate) >= 2:
+                frame = frame_seg(frame,self.xcoordinate,self.ycoordinate)
             # frame = cv2.resize(frame, (800,800),
                             #    interpolation=cv2.INTER_CUBIC)
             # frame = cv2.resize(frame, (self.canvas.winfo_width(), self.canvas.winfo_height()),
             #                    interpolation=cv2.INTER_CUBIC)
                               
             self.photo = ImageTk.PhotoImage(image=Image.fromarray(frame))
-            self.canvas.create_image(250,0, image=self.photo, anchor=tk.NW)
+            self.canvas.create_image(600,400, image=self.photo, anchor=tk.CENTER)  # 坐标代表中心位置
+            self.text2 = self.canvas.create_text(600,820, anchor=tk.CENTER,\
+            text='click 2 points to start', font=tkFont.Font(family='Times', size=25, ),fill='red')
+
         else:
             self.cam.stop()
 
         self._cam = self.master.after(self.delay, self.update)
+        # self.master.mainloop()
         # print(self.seg)
 
 

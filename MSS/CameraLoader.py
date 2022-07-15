@@ -55,6 +55,7 @@ class CamLoader:
 
             self.ret, self.frame = ret, frame
             self.read_lock.release()
+        # print('bgr2rgb')
 
     def grabbed(self):
         """Return `True` if can read a frame."""
@@ -142,6 +143,7 @@ class CamLoader_Q:
                 with self.Q.mutex:
                     self.Q.queue.clear()
             # time.sleep(0.05)
+        # print('bgr2rgb')
 
     def grabbed(self):
         """Return `True` if can read a frame."""
