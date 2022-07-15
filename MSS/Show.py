@@ -60,7 +60,7 @@ class main:
         # self.models = Models(device=device)
 
         self.select_cam()  # 先显示button和menu，此时进入一个循环，直到点击事件
-        self.delay = 2
+        self.delay = 10
         self.load_cam(self.filepath)  # 若使用相机则清空画布，加载相机
         self.update()
             # print('helloA')
@@ -85,12 +85,14 @@ class main:
     
     def startseg(self):
         self.seg = True
+        self.delay = 1000  # 开始分割时，降低刷新速度
 
 
     def stopseg(self):
         self.seg = False
         self.xcoordinate = [] # 停止后清除坐标存储
         self.ycoordinate = []
+        self.delay = 10
 
 
     def select_cam(self):
@@ -155,6 +157,7 @@ class main:
             self.cam = CamLoader(source,preprocess=self.preproc).start()
 
     def update(self):
+        print(self.seg)
         if self.cam is None:
             return
         if self.cam.grabbed():
@@ -173,10 +176,12 @@ class main:
             self.canvas.create_image(600,400, image=self.photo, anchor=tk.CENTER)  # 坐标代表中心位置
             self.text2 = self.canvas.create_text(600,820, anchor=tk.CENTER,\
             text='click 2 points to start', font=tkFont.Font(family='Times', size=25, ),fill='red')
+            print("hello")
 
         else:
             self.cam.stop()
 
+        # if self.seg == False:
         self._cam = self.master.after(self.delay, self.update)
         # self.master.mainloop()
         # print(self.seg)
